@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trip Attendance System</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    color: #172033;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+header {
+    background: #ffffff;
+    border-bottom: 1px solid #ddd;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+}
+
+.header-inner {
+    max-width: 1200px;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 25px;
+}
+
+.subtitle {
+    color: #6b7280;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.tabs {
+    display: flex;
+    gap: 8px;
+}
+
+button {
+    cursor: pointer;
+    border: 1px solid #d1d5db;
+    background: white;
+    padding: 11px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+button:hover {
+    background: #f1f5f9;
+}
+
+button.active,
+button.primary {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+.controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 180px;
+}
+
+label {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: bold;
+}
+
+select,
+input {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: white;
+    font-size: 16px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 17px;
+}
+
+.card-title {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.metric {
+    font-size: 28px;
+    font-weight: 800;
+    margin-top: 5px;
+}
+
+.panel {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.progress {
+    width: 100%;
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 12px;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #2563eb;
+    transition: width 0.2s;
+}
+
+.muted {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.scan-area {
+    display: flex;
+    gap: 10px;
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.scan-area .field {
+    min-width: 250px;
+}
+
+.status {
+    padding: 13px;
+    border-radius: 8px;
+    margin-top: 12px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+}
+
+.status.success {
+    border-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.status.error {
+    border-color: #dc2626;
+    background: #fef2f2;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.table-container {
+    overflow-x: auto;
+    margin-top: 12px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+th {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.badge {
+    display: inline-block;
+    border-radius: 20px;
+    padding: 4px 9px;
+    font-size: 11px;
+    font-weight: bold;
+    border: 1px solid #cbd5e1;
+}
+
+.present {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #86efac;
+}
+
+.missing {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 700px) {
+
+    .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .tabs {
+        width: 100%;
+    }
+
+    .tabs button {
+        flex: 1;
+    }
+
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .container {
+        padding: 12px;
+    }
+
+    .metric {
+        font-size: 23px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="header-inner">
+
+        <div>
+            <h1>Trip Attendance</h1>
+            <div class="subtitle">
+                Browser Prototype • 4 Trips • 500 Students Per Trip
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button id="adminTab" class="active">
+                Admin Dashboard
+            </button>
+
+            <button id="coordinatorTab">
+                Coordinator Scanner
+            </button>
+        </div>
+
+    </div>
+</header>
+
+
+<div class="container">
+
+
+<!-- ================= ADMIN ================= -->
+
+<section id="adminView">
+
+    <div class="controls">
+
+        <div class="field">
+            <label>TRIP</label>
+
+            <select id="adminTrip">
+                <option value="1">Trip 1 — Jaipur</option>
+                <option value="2">Trip 2 — Delhi</option>
+                <option value="3">Trip 3 — Agra</option>
+                <option value="4">Trip 4 — Udaipur</option>
+            </select>
+        </div>
+
+
+        <div class="field">
+
+            <label>CHECKPOINT</label>
+
+            <select id="adminCheckpoint"></select>
+
+        </div>
+
+
+        <div class="field">
+
+            <label>SEARCH STUDENT</label>
+
+            <input
+                id="searchStudent"
+                placeholder="Student name or ID"
+            >
+
+        </div>
+
+    </div>
+
+
+    <div class="cards">
+
+        <div class="card">
+
+            <div class="card-title">
+                Present
+            </div>
+
+            <div
+                class="metric"
+                id="adminPresent"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Missing
+            </div>
+
+            <div
+                class="metric"
+                id="adminMissing"
+            >
+                500
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Attendance
+            </div>
+
+            <div
+                class="metric"
+                id="adminPercentage"
+            >
+                0%
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Total Students
+            </div>
+
+            <div class="metric">
+                500
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="panel">
+
+        <strong>
+            Checkpoint Progress
+        </strong>
+
+        <div class="progress">
+
+            <div
+                class="progress-bar"
+                id="adminProgress"
+            ></div>
+
+        </div>
+
+        <div
+            class="muted"
+            id="adminSummary"
+            style="margin-top:8px"
+        ></div>
+
+    </div>
+
+
+    <div class="panel">
+
+        <strong>
+            Student Attendance
+        </strong>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Time</th>
+                        <th>Location</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="studentTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= COORDINATOR ================= -->
+
+<section
+    id="coordinatorView"
+    class="hidden"
+>
+
+    <div class="controls">
+
+        <div class="field">
+
+            <label>TRIP</label>
+
+            <select id="coordinatorTrip">
+
+                <option value="1">
+                    Trip 1 — Jaipur
+                </option>
+
+                <option value="2">
+                    Trip 2 — Delhi
+                </option>
+
+                <option value="3">
+                    Trip 3 — Agra
+                </option>
+
+                <option value="4">
+                    Trip 4 — Udaipur
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="field">
+
+            <label>CHECKPOINT</label>
+
+            <select id="coordinatorCheckpoint"></select>
+
+        </div>
+
+    </div>
+
+
+    <div class="panel">
+
+        <strong>
+            Coordinator Attendance Scanner
+        </strong>
+
+        <p class="muted">
+
+            Prototype mode: enter a student ID.
+            In the production version this field will use
+            the phone camera to scan the student's QR code.
+
+        </p>
+
+
+        <form
+            id="scanForm"
+            class="scan-area"
+        >
+
+            <div class="field">
+
+                <label>
+                    STUDENT QR / ID
+                </label>
+
+                <input
+                    id="studentId"
+                    placeholder="Example: T1-0001"
+                    autocomplete="off"
+                    required
+                >
+
+            </div>
+
+
+            <button
+                class="primary"
+                type="submit"
+            >
+                Mark Present
+            </button>
+
+        </form>
+
+
+        <div
+            id="scanStatus"
+            class="status"
+        >
+            Ready to scan.
+        </div>
+
+
+        <div class="actions">
+
+            <button
+                id="demoButton"
+                type="button"
+            >
+                Demo: Scan 10 Students
+            </button>
+
+
+            <button
+                id="resetButton"
+                type="button"
+            >
+                Reset Checkpoint
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="cards">
+
+        <div class="card">
+
+            <div class="card-title">
+                Present
+            </div>
+
+            <div
+                class="metric"
+                id="coordinatorPresent"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Remaining
+            </div>
+
+            <div
+                class="metric"
+                id="coordinatorMissing"
+            >
+                500
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Completion
+            </div>
+
+            <div
+                class="metric"
+                id="coordinatorPercentage"
+            >
+                0%
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Last Scan
+            </div>
+
+            <div
+                class="metric"
+                id="lastScan"
+                style="font-size:16px"
+            >
+                —
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="panel">
+
+        <strong>
+            Current Checkpoint
+        </strong>
+
+        <div
+            id="coordinatorSummary"
+            class="muted"
+            style="margin-top:8px"
+        ></div>
+
+    </div>
+
+</section>
+
+</div>
+
+
+
+<script>
+
+/* =====================================================
+   TRIP CONFIGURATION
+===================================================== */
+
+const trips = {
+
+    1: {
+        name: "Jaipur",
+        checkpoints: [
+            "School Departure",
+            "Destination Arrival",
+            "Lunch",
+            "Venue Departure",
+            "School Return"
+        ]
+    },
+
+    2: {
+        name: "Delhi",
+        checkpoints: [
+            "School Departure",
+            "Red Fort Arrival",
+            "Lunch",
+            "Museum Departure",
+            "School Return"
+        ]
+    },
+
+    3: {
+        name: "Agra",
+        checkpoints: [
+            "School Departure",
+            "Taj Mahal Arrival",
+            "Lunch",
+            "Venue Departure",
+            "School Return"
+        ]
+    },
+
+    4: {
+        name: "Udaipur",
+        checkpoints: [
+            "School Departure",
+            "Lake Arrival",
+            "Lunch",
+            "Venue Departure",
+            "School Return"
+        ]
+    }
+
+};
+
+
+/* =====================================================
+   RANDOM STUDENT DATA
+===================================================== */
+
+const firstNames = [
+
+    "Aarav",
+    "Vivaan",
+    "Aditya",
+    "Arjun",
+    "Reyansh",
+    "Atharv",
+    "Kabir",
+    "Vihaan",
+    "Ishaan",
+    "Ayaan",
+    "Krishna",
+    "Rudra",
+    "Dhruv",
+    "Anaya",
+    "Diya",
+    "Aadhya",
+    "Ira",
+    "Myra",
+    "Sara",
+    "Anvi"
+
+];
+
+
+const lastNames = [
+
+    "Sharma",
+    "Verma",
+    "Patel",
+    "Singh",
+    "Khan",
+    "Gupta",
+    "Joshi",
+    "Mehta",
+    "Malhotra",
+    "Rao",
+    "Sinha",
+    "Das",
+    "Mishra",
+    "Yadav",
+    "Tiwari",
+    "Jain"
+
+];
+
+
+const students = [];
+
+
+/*
+    Generate:
+
+    4 trips
+    × 500 students
+    = 2,000 synthetic students
+*/
+
+for (
+    let trip = 1;
+    trip <= 4;
+    trip++
+) {
+
+    for (
+        let number = 1;
+        number <= 500;
+        number++
+    ) {
+
+        const id =
+            "T" +
+            trip +
+            "-" +
+            String(number).padStart(4, "0");
+
+
+        const first =
+            firstNames[
+                (number + trip) %
+                firstNames.length
+            ];
+
+
+        const last =
+            lastNames[
+                (number * 3 + trip) %
+                lastNames.length
+            ];
+
+
+        students.push({
+
+            id: id,
+
+            trip: trip,
+
+            name: first + " " + last
+
+        });
+
+    }
+
+}
+
+
+
+/* =====================================================
+   ATTENDANCE STORAGE
+===================================================== */
+
+const attendance = {};
+
+
+for (
+    let trip = 1;
+    trip <= 4;
+    trip++
+) {
+
+    attendance[trip] = {};
+
+    trips[trip].checkpoints.forEach(
+        checkpoint => {
+
+            attendance[trip][checkpoint] =
+                new Map();
+
+        }
+    );
+
+}
+
+
+
+/* =====================================================
+   HELPER FUNCTIONS
+===================================================== */
+
+function getElement(id) {
+
+    return document.getElementById(id);
+
+}
+
+
+function currentTime() {
+
+    return new Date().toLocaleTimeString(
+        [],
+        {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        }
+    );
+
+}
+
+
+function fillCheckpointSelect(
+    select,
+    trip
+) {
+
+    select.innerHTML = "";
+
+    trips[trip].checkpoints.forEach(
+        checkpoint => {
+
+            const option =
+                document.createElement("option");
+
+            option.value = checkpoint;
+
+            option.textContent = checkpoint;
+
+            select.appendChild(option);
+
+        }
+    );
+
+}
+
+
+
+/* =====================================================
+   INITIALIZE CHECKPOINTS
+===================================================== */
+
+fillCheckpointSelect(
+    getElement("adminCheckpoint"),
+    1
+);
+
+
+fillCheckpointSelect(
+    getElement("coordinatorCheckpoint"),
+    1
+);
+
+
+
+/* =====================================================
+   ADMIN DASHBOARD
+===================================================== */
+
+function renderAdmin() {
+
+    const trip =
+        Number(
+            getElement("adminTrip").value
+        );
+
+
+    const checkpoint =
+        getElement("adminCheckpoint").value;
+
+
+    const records =
+        attendance[trip][checkpoint];
+
+
+    const search =
+        getElement("searchStudent")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    let list =
+        students.filter(
+            student =>
+                student.trip === trip
+        );
+
+
+    if (search) {
+
+        list =
+            list.filter(
+                student =>
+                    student.id
+                        .toLowerCase()
+                        .includes(search)
+                    ||
+                    student.name
+                        .toLowerCase()
+                        .includes(search)
+            );
+
+    }
+
+
+    const present =
+        records.size;
+
+
+    const missing =
+        500 - present;
+
+
+    const percentage =
+        Math.round(
+            (present / 500) * 100
+        );
+
+
+    getElement("adminPresent")
+        .textContent = present;
+
+
+    getElement("adminMissing")
+        .textContent = missing;
+
+
+    getElement("adminPercentage")
+        .textContent =
+            percentage + "%";
+
+
+    getElement("adminProgress")
+        .style.width =
+            percentage + "%";
+
+
+    getElement("adminSummary")
+        .textContent =
+            trips[trip].name +
+            " • " +
+            checkpoint +
+            " • " +
+            present +
+            " of 500 present";
+
+
+    const table =
+        getElement("studentTable");
+
+
+    table.innerHTML = "";
+
+
+    /*
+       Show first 100 matching students
+       to keep the prototype fast.
+    */
+
+    list
+        .slice(0, 100)
+        .forEach(student => {
+
+            const record =
+                records.get(student.id);
+
+
+            const row =
+                document.createElement("tr");
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${student.id}
+                </td>
+
+                <td>
+                    ${student.name}
+                </td>
+
+                <td>
+
+                    ${
+                        record
+
+                        ?
+
+                        '<span class="badge present">Present</span>'
+
+                        :
+
+                        '<span class="badge missing">Missing</span>'
+                    }
+
+                </td>
+
+                <td>
+                    ${
+                        record
+                        ?
+                        record.time
+                        :
+                        "—"
+                    }
+                </td>
+
+                <td>
+                    ${
+                        record
+                        ?
+                        record.location
+                        :
+                        "—"
+                    }
+                </td>
+
+            `;
+
+
+            table.appendChild(row);
+
+        });
+
+}
+
+
+
+/* =====================================================
+   COORDINATOR DASHBOARD
+===================================================== */
+
+function renderCoordinator() {
+
+    const trip =
+        Number(
+            getElement("coordinatorTrip").value
+        );
+
+
+    const checkpoint =
+        getElement("coordinatorCheckpoint")
+            .value;
+
+
+    const records =
+        attendance[trip][checkpoint];
+
+
+    const present =
+        records.size;
+
+
+    const missing =
+        500 - present;
+
+
+    const percentage =
+        Math.round(
+            (present / 500) * 100
+        );
+
+
+    getElement("coordinatorPresent")
+        .textContent = present;
+
+
+    getElement("coordinatorMissing")
+        .textContent = missing;
+
+
+    getElement("coordinatorPercentage")
+        .textContent =
+            percentage + "%";
+
+
+    const values =
+        Array.from(records.values());
+
+
+    getElement("lastScan")
+        .textContent =
+            values.length
+            ?
+            values[values.length - 1].time
+            :
+            "—";
+
+
+    getElement("coordinatorSummary")
+        .textContent =
+            trips[trip].name +
+            " • " +
+            checkpoint +
+            " • " +
+            present +
+            "/500 present";
+
+}
+
+
+
+/* =====================================================
+   SCAN STUDENT
+===================================================== */
+
+function scanStudent(studentId) {
+
+    const trip =
+        Number(
+            getElement("coordinatorTrip").value
+        );
+
+
+    const checkpoint =
+        getElement("coordinatorCheckpoint")
+            .value;
+
+
+    const records =
+        attendance[trip][checkpoint];
+
+
+    const student =
+        students.find(
+            item =>
+                item.trip === trip
+                &&
+                item.id.toUpperCase()
+                    ===
+                studentId
+                    .trim()
+                    .toUpperCase()
+        );
+
+
+    if (!student) {
+
+        const status =
+            getElement("scanStatus");
+
+
+        status.className =
+            "status error";
+
+
+        status.textContent =
+            "Student not found for this trip.";
+
+
+        return false;
+
+    }
+
+
+
+    /*
+       Duplicate protection
+    */
+
+    if (records.has(student.id)) {
+
+        const status =
+            getElement("scanStatus");
+
+
+        status.className =
+            "status error";
+
+
+        status.textContent =
+            "Already marked present: " +
+            student.name;
+
+
+        return false;
+
+    }
+
+
+
+    const time =
+        currentTime();
+
+
+    /*
+       Prototype location.
+       Production version will use
+       actual phone GPS.
+    */
+
+    const location =
+        trips[trip].name;
+
+
+    records.set(
+        student.id,
+        {
+
+            time: time,
+
+            location: location
+
+        }
+    );
+
+
+    const status =
+        getElement("scanStatus");
+
+
+    status.className =
+        "status success";
+
+
+    status.textContent =
+        "✓ " +
+        student.name +
+        " marked PRESENT at " +
+        time +
+        " • " +
+        location;
+
+
+    renderCoordinator();
+
+    renderAdmin();
+
+
+    return true;
+
+}
+
+
+
+/* =====================================================
+   SCAN FORM
+===================================================== */
+
+getElement("scanForm")
+    .addEventListener(
+        "submit",
+        function(event) {
+
+            event.preventDefault();
+
+
+            const input =
+                getElement("studentId");
+
+
+            const success =
+                scanStudent(
+                    input.value
+                );
+
+
+            if (success) {
+
+                input.value = "";
+
+            }
+
+
+            input.focus();
+
+        }
+    );
+
+
+
+/* =====================================================
+   DEMO SCAN
+===================================================== */
+
+getElement("demoButton")
+    .addEventListener(
+        "click",
+        function() {
+
+            const trip =
+                Number(
+                    getElement("coordinatorTrip")
+                        .value
+                );
+
+
+            const tripStudents =
+                students.filter(
+                    student =>
+                        student.trip === trip
+                );
+
+
+            let scanned = 0;
+
+
+            for (
+                const student
+                of tripStudents
+            ) {
+
+                if (scanned >= 10) {
+                    break;
+                }
+
+
+                if (
+                    scanStudent(
+                        student.id
+                    )
+                ) {
+
+                    scanned++;
+
+                }
+
+            }
+
+        }
+    );
+
+
+
+/* =====================================================
+   RESET CHECKPOINT
+===================================================== */
+
+getElement("resetButton")
+    .addEventListener(
+        "click",
+        function() {
+
+            const trip =
+                Number(
+                    getElement("coordinatorTrip")
+                        .value
+                );
+
+
+            const checkpoint =
+                getElement("coordinatorCheckpoint")
+                    .value;
+
+
+            attendance[trip][checkpoint]
+                .clear();
+
+
+            getElement("scanStatus")
+                .className =
+                    "status";
+
+
+            getElement("scanStatus")
+                .textContent =
+                    "Checkpoint reset.";
+
+
+            renderCoordinator();
+
+            renderAdmin();
+
+        }
+    );
+
+
+
+/* =====================================================
+   ADMIN CONTROLS
+===================================================== */
+
+getElement("adminTrip")
+    .addEventListener(
+        "change",
+        function() {
+
+            const trip =
+                Number(
+                    this.value
+                );
+
+
+            fillCheckpointSelect(
+                getElement("adminCheckpoint"),
+                trip
+            );
+
+
+            renderAdmin();
+
+        }
+    );
+
+
+getElement("adminCheckpoint")
+    .addEventListener(
+        "change",
+        renderAdmin
+    );
+
+
+getElement("searchStudent")
+    .addEventListener(
+        "input",
+        renderAdmin
+    );
+
+
+
+/* =====================================================
+   COORDINATOR CONTROLS
+===================================================== */
+
+getElement("coordinatorTrip")
+    .addEventListener(
+        "change",
+        function() {
+
+            const trip =
+                Number(
+                    this.value
+                );
+
+
+            fillCheckpointSelect(
+                getElement("coordinatorCheckpoint"),
+                trip
+            );
+
+
+            renderCoordinator();
+
+            renderAdmin();
+
+        }
+    );
+
+
+getElement("coordinatorCheckpoint")
+    .addEventListener(
+        "change",
+        renderCoordinator
+    );
+
+
+
+/* =====================================================
+   TAB SWITCHING
+===================================================== */
+
+getElement("adminTab")
+    .addEventListener(
+        "click",
+        function() {
+
+            getElement("adminView")
+                .classList
+                .remove("hidden");
+
+
+            getElement("coordinatorView")
+                .classList
+                .add("hidden");
+
+
+            this.classList.add("active");
+
+
+            getElement("coordinatorTab")
+                .classList
+                .remove("active");
+
+
+            renderAdmin();
+
+        }
+    );
+
+
+getElement("coordinatorTab")
+    .addEventListener(
+        "click",
+        function() {
+
+            getElement("adminView")
+                .classList
+                .add("hidden");
+
+
+            getElement("coordinatorView")
+                .classList
+                .remove("hidden");
+
+
+            this.classList.add("active");
+
+
+            getElement("adminTab")
+                .classList
+                .remove("active");
+
+
+            renderCoordinator();
+
+        }
+    );
+
+
+
+/* =====================================================
+   START APPLICATION
+===================================================== */
+
+renderAdmin();
+
+renderCoordinator();
+
+</script>
+
+</body>
+</html>
