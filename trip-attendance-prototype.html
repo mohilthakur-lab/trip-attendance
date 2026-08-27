@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trip Attendance Prototype</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f5f7fb;color:#18212f}
+.wrap{max-width:1100px;margin:auto;padding:20px}
+header{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+h1{margin:0}.muted{color:#64748b;font-size:13px}
+.tabs button,.btn{padding:11px 15px;border:1px solid #cbd5e1;border-radius:9px;background:white;cursor:pointer;font-weight:600}
+.tabs .active,.primary{background:#2563eb;color:white;border-color:#2563eb}
+.controls{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}
+.field{display:flex;flex-direction:column;gap:5px;min-width:180px;flex:1}
+label{font-size:12px;font-weight:bold;color:#64748b}
+select,input{padding:11px;border:1px solid #cbd5e1;border-radius:9px;font-size:16px;background:white}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:15px 0}
+.card,.panel{background:white;border:1px solid #e2e8f0;border-radius:13px;padding:16px;margin-bottom:15px}
+.metric{font-size:27px;font-weight:800;margin-top:4px}
+.progress{height:9px;background:#e2e8f0;border-radius:10px;overflow:hidden}.progress div{height:100%;background:#2563eb}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px;border-bottom:1px solid #e2e8f0;font-size:13px}
+.scan{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.scan .field{min-width:250px}
+.status{padding:12px;border:1px solid #cbd5e1;border-radius:9px;margin-top:12px;background:#f8fafc}
+.good{border-color:#16a34a}.bad{border-color:#dc2626}
+.pill{padding:4px 8px;border-radius:20px;border:1px solid #cbd5e1;font-size:11px}
+@media(max-width:700px){.cards{grid-template-columns:repeat(2,1fr)}.wrap{padding:12px}table{min-width:650px}.panel{overflow:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div><h1>Trip Attendance</h1><div class="muted">Browser prototype • 4 trips • 500 students each</div></div>
+<div class="tabs">
+<button id="adminTab" class="active">Admin Dashboard</button>
+<button id="coordTab">Coordinator Scanner</button>
+</div>
+</header>
+
+<section id="adminView">
+<div class="controls">
+<div class="field"><label>TRIP</label><select id="adminTrip"></select></div>
+<div class="field"><label>CHECKPOINT</label><select id="adminCp"></select></div>
+<div class="field"><label>SEARCH</label><input id="search" placeholder="Student name or ID"></div>
+</div>
+<div class="cards">
+<div class="card"><div class="muted">Present</div><div id="aPresent" class="metric">0</div></div>
+<div class="card"><div class="muted">Missing</div><div id="aMissing" class="metric">500</div></div>
+<div class="card"><div class="muted">Attendance</div><div id="aPercent" class="metric">0%</div></div>
+<div class="card"><div class="muted">Total</div><div class="metric">500</div></div>
+</div>
+<div class="panel">
+<b>Checkpoint progress</b>
+<div class="progress" style="margin-top:10px"><div id="bar" style="width:0%"></div></div>
+<div id="summary" class="muted" style="margin-top:8px"></div>
+</div>
+<div class="panel">
+<b>Students</b>
+<div style="overflow:auto;margin-top:8px"><table><thead><tr><th>ID</th><th>Name</th><th>Status</th><th>Time</th><th>Location</th></tr></thead><tbody id="rows"></tbody></table></div>
+</div>
+</section>
+
+<section id="coordView" style="display:none">
+<div class="controls">
+<div class="field"><label>TRIP</label><select id="coordTrip"></select></div>
+<div class="field"><label>CHECKPOINT</label><select id="coordCp"></select></div>
+</div>
+<div class="panel">
+<b>Coordinator Scanner</b>
+<p class="muted">Prototype mode: type a student ID. In the production version this becomes the phone camera QR scanner.</p>
+<form id="scanForm" class="scan">
+<div class="field"><label>STUDENT QR / ID</label><input id="scanId" placeholder="Example: T1-0001" required></div>
+<button class="btn primary">Mark Present</button>
+</form>
+<div id="scanStatus" class="status">Ready to scan.</div>
+<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+<button id="demo" class="btn" type="button">Demo: scan 10</button>
+<button id="reset" class="btn" type="button">Reset checkpoint</button>
+</div>
+</div>
+<div class="cards">
+<div class="card"><div class="muted">Present</div><div id="cPresent" class="metric">0</div></div>
+<div class="card"><div class="muted">Remaining</div><div id="cMissing" class="metric">500</div></div>
+<div class="card"><div class="muted">Completion</div><div id="cPercent" class="metric">0%</div></div>
+<div class="card"><div class="muted">Last scan</div><div id="cLast" class="metric" style="font-size:15px">—</div></div>
+</div>
+<div class="panel"><b>Current checkpoint</b><div id="cSummary" class="muted" style="margin-top:7px"></div></div>
+</section>
+</div>
+
+<script>
+const trips={
+1:{name:"Jaipur",checkpoints:["School Departure","Destination Arrival","Lunch","Venue Departure","School Return"]},
+2:{name:"Delhi",checkpoints:["School Departure","Red Fort Arrival","Lunch","Museum Departure","School Return"]},
+3:{name:"Agra",checkpoints:["School Departure","Taj Mahal Arrival","Lunch","Venue Departure","School Return"]},
+4:{name:"Udaipur",checkpoints:["School Departure","Lake Arrival","Lunch","Venue Departure","School Return"]}
+};
+const first=["Aarav","Vivaan","Aditya","Arjun","Reyansh","Atharv","Kabir","Vihaan","Ishaan","Ayaan","Krishna","Rudra","Dhruv","Anaya","Diya","Aadhya","Ira","Myra","Sara","Anvi"];
+const last=["Sharma","Verma","Patel","Singh","Khan","Gupta","Joshi","Mehta","Malhotra","Rao","Sinha","Das","Mishra","Yadav","Tiwari","Jain"];
+const students=[];
+for(let t=1;t<=4;t++)for(let i=1;i<=500;i++)students.push({id:`T${t}-${String(i).padStart(4,"0")}`,trip:t,name:first[(i+t)%first.length]+" "+last[(i*3+t)%last.length]});
+const attendance={};
+for(let t=1;t<=4;t++){attendance[t]={};trips[t].checkpoints.forEach(c=>attendance[t][c]=new Map())}
+
+const $=id=>document.getElementById(id);
+function fillTrips(sel){sel.innerHTML=[1,2,3,4].map(t=>`<option value="${t}">Trip ${t} — ${trips[t].name}</option>`).join("")}
+function fillCp(sel,t){sel.innerHTML=trips[t].checkpoints.map(c=>`<option>${c}</option>`).join("")}
+fillTrips($("adminTrip"));fillTrips($("coordTrip"));fillCp($("adminCp"),1);fillCp($("coordCp"),1);
+
+function timeNow(){return new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+function getA(){return attendance[+$("adminTrip").value][$("adminCp").value]}
+function getC(){return attendance[+$("coordTrip").value][$("coordCp").value]}
+
+function renderAdmin(){
+ const t=+$("adminTrip").value,cp=$("adminCp").value,m=getA(),q=$("search").value.trim().toLowerCase();
+ const list=students.filter(s=>s.trip===t).filter(s=>!q||s.id.toLowerCase().includes(q)||s.name.toLowerCase().includes(q));
+ const p=m.size;$("aPresent").textContent=p;$("aMissing").textContent=500-p;$("aPercent").textContent=Math.round(p/5)+"%";
+ $("bar").style.width=(p/5)+"%";$("summary").textContent=`${trips[t].name} • ${cp} • ${p} of 500 present`;
+ $("rows").innerHTML=list.slice(0,100).map(s=>{const r=m.get(s.id);return `<tr><td>${s.id}</td><td>${s.name}</td><td><span class="pill">${r?"Present":"Missing"}</span></td><td>${r?r.time:"—"}</td><td>${r?r.location:"—"}</td></tr>`}).join("");
+}
+function renderCoord(){
+ const t=+$("coordTrip").value,cp=$("coordCp").value,m=getC(),p=m.size,v=[...m.values()];
+ $("cPresent").textContent=p;$("cMissing").textContent=500-p;$("cPercent").textContent=Math.round(p/5)+"%";$("cLast").textContent=v.length?v[v.length-1].time:"—";
+ $("cSummary").textContent=`${trips[t].name} • ${cp} • ${p}/500 present • timestamp and location captured`;
+}
+function scan(id){
+ const t=+$("coordTrip").value,cp=$("coordCp").value,m=getC();
+ const s=students.find(x=>x.trip===t&&x.id.toUpperCase()===id.trim().toUpperCase());
+ if(!s){$("scanStatus").className="status bad";$("scanStatus").textContent="Student not found for this trip.";return false}
+ if(m.has(s.id)){$("scanStatus").className="status bad";$("scanStatus").textContent=`Already present: ${s.name}`;return false}
+ const time=timeNow();m.set(s.id,{time,location:trips[t].name});
+ $("scanStatus").className="status good";$("scanStatus").textContent=`✓ ${s.name} marked PRESENT at ${time} • ${trips[t].name}`;
+ renderCoord();renderAdmin();return true;
+}
+$("scanForm").onsubmit=e=>{e.preventDefault();if(scan($("scanId").value))$("scanId").value="";$("scanId").focus()};
+$("demo").onclick=()=>{const t=+$("coordTrip").value;let n=0;for(const s of students.filter(x=>x.trip===t)){if(n>=10)break;if(scan(s.id))n++}};
+$("reset").onclick=()=>{getC().clear();$("scanStatus").className="status";$("scanStatus").textContent="Checkpoint reset.";renderCoord();renderAdmin()};
+$("adminTrip").onchange=()=>{fillCp($("adminCp"),+$("adminTrip").value);renderAdmin()};
+$("adminCp").onchange=renderAdmin;$("search").oninput=renderAdmin;
+$("coordTrip").onchange=()=>{fillCp($("coordCp"),+$("coordTrip").value);renderCoord();renderAdmin()};
+$("coordCp").onchange=renderCoord;
+$("adminTab").onclick=()=>{$("adminView").style.display="block";$("coordView").style.display="none";$("adminTab").classList.add("active");$("coordTab").classList.remove("active");renderAdmin()};
+$("coordTab").onclick=()=>{$("adminView").style.display="none";$("coordView").style.display="block";$("coordTab").classList.add("active");$("adminTab").classList.remove("active");renderCoord()};
+renderAdmin();renderCoord();
+</script>
+</body>
+</html>
